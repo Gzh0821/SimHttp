@@ -12,7 +12,8 @@ class HttpHandler:
                                  'Cache-Control': 'max-age=600'}
 
     @classmethod
-    def handle(cls, request_data) -> bytes:
+    def handle(cls, request_data: str, client_addr: tuple[str, int]) -> bytes:
+        time_start = datetime.datetime.now()
         request_lines = request_data.split('\r\n')
         request_method = None
         default_dynamic_para = {}
@@ -34,6 +35,10 @@ class HttpHandler:
                 default_dynamic_para['__client_browser__'] = user_agent.browser.family
                 default_dynamic_para['__client_device__'] = user_agent.device.family
                 default_dynamic_para['__client_user_agent__'] = str(user_agent)
+            default_dynamic_para['__server_time__'] = datetime.datetime.now().strftime("%Y-%b-%d %H:%M:%S")
+            default_dynamic_para['__client_ip__'] = client_addr[0]
+            default_dynamic_para['__client_port__'] = str(client_addr[1])
+            default_dynamic_para['__request_method__'] = request_method
             # 构造响应数据
             if request_method in ('GET', 'HEAD'):
                 ret_path = ExecHandler.handle(path, '', request_method)
@@ -47,7 +52,7 @@ class HttpHandler:
         if not isinstance(response_body, bytes):
             response_body = response_body.encode("utf-8")
         # 组合响应报文
-        response_head = f'{head_data}\r\n{cls.gen_header(len(response_body), response_type)}\r\n\r\n'.encode(
+        response_head = f'{head_data}\r\n{cls.gen_header(len(response_body), response_type, time_start)}\r\n\r\n'.encode(
             "utf-8")
         if request_method == 'HEAD':
             return response_head
@@ -87,9 +92,10 @@ class HttpHandler:
         return headers, content
 
     @classmethod
-    def gen_header(cls, content_len: int, content_type: str = 'text/html; charset=utf-8') -> str:
+    def gen_header(cls, content_len: int, content_type: str, time_start: datetime) -> str:
         headers = cls.default_respondse_headers.copy()
 
+        time_end = datetime.datetime.now()
         # 获取当前的 UTC 时间
         now = datetime.datetime.utcnow()
 
@@ -99,6 +105,7 @@ class HttpHandler:
         headers['Content-Length'] = str(content_len)
         headers['Date'] = date_str
         headers['Content-Type'] = content_type
+        headers['Handle-time'] = f'{time_end.microsecond - time_start.microsecond} microsecond'
 
         header_str = '\r\n'.join([f'{key}: {value}' for key, value in headers.items()])
         return header_str

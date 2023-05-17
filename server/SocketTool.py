@@ -9,8 +9,9 @@ class SimTCPHandler(socketserver.BaseRequestHandler):
     def handle(self):
         try:
             # 接收客户端请求数据
+            client_addr = self.client_address
             request_data = self.request.recv(2048).decode()
-            res_data = HttpHandler.handle(request_data)
+            res_data = HttpHandler.handle(request_data,client_addr)
             self.request.sendall(res_data)
         except TimeoutError:
             self.request.close()
