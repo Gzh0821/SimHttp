@@ -1,0 +1,111 @@
+import os
+import pathlib
+import imghdr
+import re
+import subprocess
+import json
+from urllib.parse import urlparse, parse_qs
+from functools import lru_cache
+
+
+class ByteHandler:
+    @classmethod
+    def is_image_file(cls, file_path) -> bool:
+        # 使用imghdr判断文件是否为图片
+        file_type = imghdr.what(file_path)
+        return file_type is not None
+
+    @classmethod
+    def read_byte(cls, file_path) -> bytes:
+        with open(file_path, 'rb') as file:
+            image_bytes = file.read()
+        return image_bytes
+
+
+class FileReader:
+    access_file_type = {'.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8',
+                        '.js': 'application/javascript; charset=utf-8', '.json': 'text/json',
+                        '.jpg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp',
+                        '.ico': 'image/x-icon', '.pycgi': 'text/html; charset=utf-8'}
+    byte_type = {'.jpg', '.png', '.webp', '.ico'}
+
+    @classmethod
+    def read(cls, request_path: str, dynamic_para: dict[str:str] = None) \
+            -> tuple[int, str | bytes, str]:
+        file_path = f'./webroot{request_path}'
+        status = 200
+        file_type = pathlib.Path(file_path).suffix
+        if file_type == '':
+            if file_path[-1] != '/':
+                file_path += '/'
+            file_path += 'index.html'
+            file_type = pathlib.Path(file_path).suffix
+        print(f'请求文件：{file_path}')
+        # 检查是否禁止访问
+        if file_type not in cls.access_file_type:
+            status = 403
+            file_path = './webroot/403.html'
+        else:
+            # 检查文件是否存在
+            file_exist = os.path.exists(file_path)
+            if not file_exist:
+                file_path = './webroot/404.html'
+                status = 404
+        print(f'读取文件：{file_path}')
+        file_type = pathlib.Path(file_path).suffix
+        # 读取文件全部内容
+        if file_type in cls.byte_type:
+            content = ByteHandler.read_byte(file_path)
+        else:
+            with open(file_path, 'r', encoding='utf-8') as file:
+                content = file.read()
+            # 处理动态内容
+            if file_type == '.pycgi' and content.startswith('<!--{{dynamic}}-->'):
+                print("--Dynamic!--")
+                dynamic_pattern = r"<!--{%(\w+)%}-->"
+                content = content[len('<!--{{dynamic}}-->'):]
+                if dynamic_para is not None:
+                    content = re.sub(dynamic_pattern,
+                                     lambda match: dynamic_para.get(match.group(1), match.group(0)),
+                                     content)
+                    # result = re.sub(pattern, lambda match: dictionary.get(match.group(1), ''), text)
+                else:
+                    content = re.sub(dynamic_pattern, '', content, 0)
+        # 特殊页面处理
+        if file_path.endswith('404_page.html'):
+            status = 404
+        elif file_path.endswith('403_page.html'):
+            status = 403
+        return status, content, cls.access_file_type[file_type]
+
+    @classmethod
+    def read_400(cls, request_path: str = '/400.html') -> tuple[str, str]:
+        with open(f'./webroot{request_path}', 'r', encoding='utf-8') as file:
+            content = file.read()
+        return content, cls.access_file_type['.html']
+
+
+class ExecHandler:
+
+    @classmethod
+    def handle(cls, path: str, content: str, method: str) -> dict[str, str]:
+        file_path = f'./webroot{path}'
+        file_type = pathlib.Path(file_path).suffix
+        if not file_type == '.pycgi':
+            return {}
+        cgi_file_path = file_path[:-3]
+        try:
+            with open(cgi_file_path, 'r', encoding='utf-8') as file:
+                flag_cont = file.readline()
+                if flag_cont.startswith('# {%ONLY POST%}') and method != 'POST':
+                    return {}
+        except FileNotFoundError:
+            return {}
+        try:
+            output = subprocess.check_output(['python', cgi_file_path, content], stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError:
+            return {}
+        out_text = output.decode("utf-8")
+        print(out_text)
+        out_dict: dict[str, str] = json.loads(out_text)
+        return out_dict

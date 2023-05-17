@@ -1,0 +1,77 @@
+<!--{{dynamic}}-->
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../../css/bootstrap.min.css">
+    <title>SimHTTP</title>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="../index.html">SimHTTP</a>
+        <div>
+            <ul class="navbar-nav">
+                <!-- 项目 -->
+                <li class="nav-item">
+                    <a class="nav-link" href="../template/atlas/">Atlas模板</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../template/goid/">Goid模板</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="./calculator.pycgi">动态计算器</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="./query.pycgi">数据库查询</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div id="wrapper">
+    <div class="container">
+        <div class="row"><h1 class="col-12 mt-4 mb-4">数据库查询</h1></div>
+        <div class="col-12">
+            <hr>
+            <p class="col-md-10">仅支持通过学生的id查询。</p>
+            <hr>
+            <div class="col-md-10">
+                <form method="post" action="./query.pycgi" style="width: 100%">
+
+                    <div class="form-inline d-flex align-items-center">
+                        <label for="input_id">查询：</label>
+                        <input type="text" class="form-control mr-2" id="input_id" name="input_id">
+                        <!-- 提交按钮 -->
+                        <button type="submit" class="mr-2 btn btn-primary">提交</button>
+                    </div>
+
+                </form>
+            </div>
+            <hr>
+            <p class="col-md-10"><!--{%result%}--></p>
+        </div>
+    </div>
+    <div id="push"></div>
+</div>
+
+<div>
+    <br><br><br>
+</div>
+<footer class="py-3 bg-dark" id="footer" style="position: fixed; left: 0; bottom: 0; width: 100%;">
+    <div class="container">
+        <p class="m-0 text-center text-white">客户端标记：<!--{%__client_user_agent__%}--></p>
+        <p class="m-0 text-center text-white">Copyright &copy; Gaozih 2020-2023 | <a href="https://github.com/Gzh0821">Github</a>
+        </p>
+        <p class="m-0 text-center text-white">使用|<a href="https://v4.bootcss.com/">Bootstrap</a>|构建</p>
+    </div>
+</footer>
+<script>
+    document.querySelector('input[name="previous-page"]').value = window.location.href;
+</script>
+<script src="../../js/jquery.min.js"></script>
+<script src="../../js/popper.min.js"></script>
+<script src="../../js/bootstrap.min.js"></script>
+</body>
+</html>
