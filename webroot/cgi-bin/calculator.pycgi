@@ -64,6 +64,8 @@
             </div>
             <hr>
             <p class="col-md-10"><!--{%result%}--></p>
+            <hr>
+            <p class="col-md-10"><!--{%tool%}--></p>
         </div>
     </div>
     <div id="push"></div>

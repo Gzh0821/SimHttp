@@ -11,7 +11,7 @@ class SimTCPHandler(socketserver.BaseRequestHandler):
             # 接收客户端请求数据
             client_addr = self.client_address
             request_data = self.request.recv(2048).decode()
-            res_data = HttpHandler.handle(request_data,client_addr)
+            res_data = HttpHandler.handle(request_data, client_addr)
             self.request.sendall(res_data)
         except TimeoutError:
             self.request.close()
@@ -39,7 +39,7 @@ class SimTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
 
 def run_server(host: str, port: int, max_thread: int = 10, default_timeout=2):
     # 设置TCP超时
-    socket.setdefaulttimeout(2)
+    socket.setdefaulttimeout(default_timeout)
 
     # 设置最大线程数
     SimTCPServer.set_max_thread(max_thread)

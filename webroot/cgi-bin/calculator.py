@@ -1,6 +1,6 @@
 # {%ONLY POST%}
 import sys
-from CgiTool.ArgTool import ArgCgi
+from PyCgiTool.ArgTool import ArgCgi
 
 
 class CalculatorCgi(ArgCgi):
@@ -17,6 +17,7 @@ class CalculatorCgi(ArgCgi):
             self.add_output('result', str(res))
         except Exception as e:
             self.add_output('result', str(e))
+        self.add_output('tool', 'result by python')
 
 
 if __name__ == '__main__':

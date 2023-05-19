@@ -1,5 +1,4 @@
 import json
-import sys
 from abc import abstractmethod
 from urllib.parse import parse_qs
 
@@ -25,5 +24,12 @@ class ArgCgi:
             self.out_dict[key] = value
 
     def run(self):
-        self.handle()
-        print(json.dumps(self.out_dict))
+        try:
+            self.handle()
+            print(json.dumps(self.out_dict))
+        except Exception as e:
+            return
+
+
+class ArgGeneralException(RuntimeError):
+    pass

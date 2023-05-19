@@ -2,19 +2,19 @@
 import pymysql
 import sys
 
-from CgiTool.ArgTool import ArgCgi
+from PyCgiTool.ArgTool import ArgCgi
 
 
 class QueryCgi(ArgCgi):
     def handle(self) -> None:
         try:
             cnx = pymysql.connect(user='root', password='Abcde12345', host='localhost', database='sim_http_test')
-        except:
+        except pymysql.err.OperationalError:
             self.add_output('result', f'数据库连接失败！')
             return
         try:
             input_id = int(self['input_id'])
-        except ValueError as e:
+        except ValueError:
             result_text = '错误的id格式！'
         else:
             cursor = cnx.cursor()

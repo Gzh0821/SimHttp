@@ -52,8 +52,9 @@ class HttpHandler:
         if not isinstance(response_body, bytes):
             response_body = response_body.encode("utf-8")
         # 组合响应报文
-        response_head = f'{head_data}\r\n{cls.gen_header(len(response_body), response_type, time_start)}\r\n\r\n'.encode(
-            "utf-8")
+        response_head = f'{head_data}\r\n' \
+                        f'{cls.gen_header(len(response_body), response_type, time_start)}' \
+                        f'\r\n\r\n'.encode("utf-8")
         if request_method == 'HEAD':
             return response_head
         response_data = response_head + response_body

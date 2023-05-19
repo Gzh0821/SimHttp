@@ -1,17 +1,15 @@
+import imghdr
+import json
 import os
 import pathlib
-import imghdr
 import re
 import subprocess
-import json
-from urllib.parse import urlparse, parse_qs
-from functools import lru_cache
 
 
 class ByteHandler:
     @classmethod
     def is_image_file(cls, file_path) -> bool:
-        # 使用imghdr判断文件是否为图片
+        # 使用 imghdr 判断文件是否为图片
         file_type = imghdr.what(file_path)
         return file_type is not None
 
@@ -26,8 +24,10 @@ class FileReader:
     access_file_type = {'.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8',
                         '.js': 'application/javascript; charset=utf-8', '.json': 'text/json',
                         '.jpg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp',
-                        '.ico': 'image/x-icon', '.pycgi': 'text/html; charset=utf-8'}
+                        '.ico': 'image/x-icon',
+                        '.pycgi': 'text/html; charset=utf-8', '.plcgi': 'text/html; charset=utf-8'}
     byte_type = {'.jpg', '.png', '.webp', '.ico'}
+    cgi_type = {'.pycgi', '.plcgi'}
 
     @classmethod
     def read(cls, request_path: str, dynamic_para: dict[str:str] = None) \
@@ -60,7 +60,7 @@ class FileReader:
             with open(file_path, 'r', encoding='utf-8') as file:
                 content = file.read()
             # 处理动态内容
-            if file_type == '.pycgi' and content.startswith('<!--{{dynamic}}-->'):
+            if file_type in cls.cgi_type and content.startswith('<!--{{dynamic}}-->'):
                 print("--Dynamic!--")
                 dynamic_pattern = r"<!--{%(\w+)%}-->"
                 content = content[len('<!--{{dynamic}}-->'):]
@@ -86,14 +86,16 @@ class FileReader:
 
 
 class ExecHandler:
+    cgi_type_dict = {'.pycgi': ('.py', 'python'), '.plcgi': ('.pl', 'perl')}
 
     @classmethod
     def handle(cls, path: str, content: str, method: str) -> dict[str, str]:
         file_path = f'./webroot{path}'
         file_type = pathlib.Path(file_path).suffix
-        if not file_type == '.pycgi':
+        if file_type not in cls.cgi_type_dict:
             return {}
-        cgi_file_path = file_path[:-3]
+        cgi_file_path = file_path[:file_path.rfind(file_type)] + cls.cgi_type_dict[file_type][0]
+        cgi_exec_command = cls.cgi_type_dict[file_type][1]
         try:
             with open(cgi_file_path, 'r', encoding='utf-8') as file:
                 flag_cont = file.readline()
@@ -102,7 +104,8 @@ class ExecHandler:
         except FileNotFoundError:
             return {}
         try:
-            output = subprocess.check_output(['python', cgi_file_path, content], stderr=subprocess.STDOUT)
+            output = subprocess.check_output([cgi_exec_command, cgi_file_path, content], stderr=subprocess.STDOUT)
+            print(content)
         except subprocess.CalledProcessError:
             return {}
         out_text = output.decode("utf-8")
