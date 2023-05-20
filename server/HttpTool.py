@@ -7,9 +7,9 @@ import user_agents
 class HttpHandler:
     head_dict = {200: 'HTTP/1.1 200 OK', 400: 'HTTP/1.1 400 Bad Request',
                  403: 'HTTP/1.1 403 Forbidden', 404: 'HTTP/1.1 404 Not Found'}
-    default_respondse_headers = {'Server': 'Gaozih SimHttp/1.0.0 (Python3)',
-                                 'Sim-Test': 'True',
-                                 'Cache-Control': 'max-age=600'}
+    default_responds_headers = {'Server': 'Gaozih SimHttp/1.0.0 (Python3)',
+                                'Sim-Test': 'True',
+                                'Cache-Control': 'max-age=600'}
 
     @classmethod
     def handle(cls, request_data: str, client_addr: tuple[str, int]) -> bytes:
@@ -94,7 +94,7 @@ class HttpHandler:
 
     @classmethod
     def gen_header(cls, content_len: int, content_type: str, time_start: datetime) -> str:
-        headers = cls.default_respondse_headers.copy()
+        headers = cls.default_responds_headers.copy()
 
         time_end = datetime.datetime.now()
         # 获取当前的 UTC 时间

@@ -3,14 +3,19 @@ import socketserver
 import threading
 
 from server.HttpTool import HttpHandler
+from server.SslTool import SimSSLWrapper
+from server.ConfigTool import GlobalConfig as Config
 
 
 class SimTCPHandler(socketserver.BaseRequestHandler):
+    ssl_context = SimSSLWrapper()
+
     def handle(self):
+        self.request = self.ssl_context.wrap(self.request)
         try:
             # 接收客户端请求数据
             client_addr = self.client_address
-            request_data = self.request.recv(2048).decode()
+            request_data = self.request.recv(Config.getint('recv_len')).decode()
             res_data = HttpHandler.handle(request_data, client_addr)
             self.request.sendall(res_data)
         except TimeoutError:
@@ -37,12 +42,13 @@ class SimTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
         super().process_request_thread(request, client_address)
 
 
-def run_server(host: str, port: int, max_thread: int = 10, default_timeout=2):
+def run_server(host: str, port: int, config_path: str):
+    Config.init(config_path)
     # 设置TCP超时
-    socket.setdefaulttimeout(default_timeout)
+    socket.setdefaulttimeout(Config.getint('default_timeout'))
 
     # 设置最大线程数
-    SimTCPServer.set_max_thread(max_thread)
+    SimTCPServer.set_max_thread(Config.getint('max_thread'))
 
     # 创建服务器
     server = SimTCPServer((host, port), SimTCPHandler)
