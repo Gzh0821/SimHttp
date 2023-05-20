@@ -7,6 +7,7 @@ import subprocess
 
 from server.ConfigTool import GlobalConfig as Config
 
+
 class ByteHandler:
     @classmethod
     def is_image_file(cls, file_path) -> bool:
@@ -33,7 +34,8 @@ class FileReader:
     @classmethod
     def read(cls, request_path: str, dynamic_para: dict[str:str] = None) \
             -> tuple[int, str | bytes, str]:
-        file_path = f'./webroot{request_path}'
+        web_dir = Config.get('web_dir')
+        file_path = f'./{web_dir}{request_path}'
         status = 200
         file_type = pathlib.Path(file_path).suffix
         if file_type == '':
@@ -45,12 +47,12 @@ class FileReader:
         # 检查是否禁止访问
         if file_type not in cls.access_file_type:
             status = 403
-            file_path = './webroot/403.html'
+            file_path = f'./{web_dir}/403.html'
         else:
             # 检查文件是否存在
             file_exist = os.path.exists(file_path)
             if not file_exist:
-                file_path = './webroot/404.html'
+                file_path = f'./{web_dir}/404.html'
                 status = 404
         print(f'读取文件：{file_path}')
         file_type = pathlib.Path(file_path).suffix
@@ -81,7 +83,8 @@ class FileReader:
 
     @classmethod
     def read_400(cls, request_path: str = '/400.html') -> tuple[str, str]:
-        with open(f'./webroot{request_path}', 'r', encoding='utf-8') as file:
+        web_dir = Config.get('web_dir')
+        with open(f'./{web_dir}{request_path}', 'r', encoding='utf-8') as file:
             content = file.read()
         return content, cls.access_file_type['.html']
 
@@ -91,7 +94,8 @@ class ExecHandler:
 
     @classmethod
     def handle(cls, path: str, content: str, method: str) -> dict[str, str]:
-        file_path = f'./webroot{path}'
+        web_dir = Config.get('web_dir')
+        file_path = f'./{web_dir}{path}'
         file_type = pathlib.Path(file_path).suffix
         if file_type not in cls.cgi_type_dict:
             return {}
