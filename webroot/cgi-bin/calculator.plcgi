@@ -1,0 +1,92 @@
+<!--{{dynamic}}-->
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <title>SimHTTP</title>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="/index.html">SimHTTP</a>
+        <div>
+            <ul class="navbar-nav">
+                <!-- 项目 -->
+                <li class="nav-item">
+                    <a class="nav-link" href="/template/atlas/">Atlas模板</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/template/goid/">Goid模板</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/cgi-bin/calculator.pycgi">动态计算器</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/cgi-bin/query.pycgi">数据库查询</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/cgi-bin/statistics.pycgi">统计信息</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div id="wrapper">
+    <div class="container">
+        <div class="row"><h1 class="col-12 mt-4 mb-4">计算器测试</h1></div>
+        <div class="col-12">
+            <hr>
+            <div class="col-md-10">
+                <form method="post" action="/cgi-bin/calculator.pycgi" style="width: 50%">
+                    <div class="form-group">
+                        <label for="first">第一个数</label>
+                        <input type="text" class="form-control" id="first" name="first">
+                    </div>
+                    <div class="form-group">
+                        <label for="second">第二个数</label>
+                        <input type="text" class="form-control" id="second" name="second">
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="radio" name="rule" value="add">
+                            加法
+                        </label><br>
+                        <label>
+                            <input type="radio" name="rule" value="multi">
+                            乘法
+                        </label>
+                    </div>
+                    <!-- 提交按钮 -->
+                    <button type="submit" class="btn btn-primary">提交</button>
+                </form>
+            </div>
+            <hr>
+            <p class="col-md-10"><!--{%result%}--></p>
+            <hr>
+            <p class="col-md-10"><!--{%tool%}--></p>
+        </div>
+    </div>
+    <div id="push"></div>
+</div>
+
+<div>
+    <br><br><br>
+</div>
+<footer class="py-3 bg-dark" id="footer" style="position: fixed; left: 0; bottom: 0; width: 100%;">
+    <div class="container">
+        <p class="m-0 text-center text-white">客户端标记：<!--{%__client_user_agent__%}--></p>
+        <p class="m-0 text-center text-white">Copyright &copy; Gaozih 2020-2023 | <a href="https://github.com/Gzh0821">Github</a>
+        </p>
+        <p class="m-0 text-center text-white">使用|<a href="https://v4.bootcss.com/">Bootstrap</a>|构建</p>
+    </div>
+</footer>
+<script>
+    document.querySelector('input[name="previous-page"]').value = window.location.href;
+</script>
+<script src="/js/jquery.min.js"></script>
+<script src="/js/popper.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+</body>
+</html>
