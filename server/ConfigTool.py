@@ -15,9 +15,9 @@ class GlobalConfig:
             cls.config_dict[key] = value
 
     @classmethod
-    def get(cls, item: str):
+    def get(cls, item: str) -> str:
         return cls.config_dict[item]
 
     @classmethod
-    def getint(cls, item: str):
+    def getint(cls, item: str) -> int:
         return int(cls.config_dict[item])

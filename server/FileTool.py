@@ -5,6 +5,7 @@ import pathlib
 import re
 import subprocess
 
+from server.ConfigTool import GlobalConfig as Config
 
 class ByteHandler:
     @classmethod
@@ -38,7 +39,7 @@ class FileReader:
         if file_type == '':
             if file_path[-1] != '/':
                 file_path += '/'
-            file_path += 'index.html'
+            file_path += Config.get('home_page')
             file_type = pathlib.Path(file_path).suffix
         print(f'请求文件：{file_path}')
         # 检查是否禁止访问

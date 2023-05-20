@@ -8,7 +8,11 @@ from server.ConfigTool import GlobalConfig as Config
 
 
 class SimTCPHandler(socketserver.BaseRequestHandler):
-    ssl_context = SimSSLWrapper()
+    ssl_context = None
+
+    @classmethod
+    def set_ssl(cls, ssl_context: SimSSLWrapper):
+        cls.ssl_context = ssl_context
 
     def handle(self):
         self.request = self.ssl_context.wrap(self.request)
@@ -42,13 +46,16 @@ class SimTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
         super().process_request_thread(request, client_address)
 
 
-def run_server(host: str, port: int, config_path: str):
-    Config.init(config_path)
+def run_server(host: str, port: int):
     # 设置TCP超时
     socket.setdefaulttimeout(Config.getint('default_timeout'))
 
     # 设置最大线程数
     SimTCPServer.set_max_thread(Config.getint('max_thread'))
+
+    # 创建SSL隧道
+    ssl_context = SimSSLWrapper(Config.get('crt_path'), Config.get('key_path'))
+    SimTCPHandler.set_ssl(ssl_context)
 
     # 创建服务器
     server = SimTCPServer((host, port), SimTCPHandler)
