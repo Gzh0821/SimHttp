@@ -9,7 +9,8 @@ class HttpHandler:
                  403: 'HTTP/1.1 403 Forbidden', 404: 'HTTP/1.1 404 Not Found'}
     default_responds_headers = {'Server': 'Gaozih SimHttp/1.0.0 (Python3)',
                                 'Sim-Test': 'True',
-                                'Cache-Control': 'max-age=600'}
+                                'Cache-Control': 'max-age=600',
+                                }
 
     @classmethod
     def handle(cls, request_data: str, client_addr: tuple[str, int]) -> bytes:
