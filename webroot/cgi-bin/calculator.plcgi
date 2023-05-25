@@ -39,7 +39,7 @@
         <div class="col-12">
             <hr>
             <div class="col-md-10">
-                <form method="post" action="/cgi-bin/calculator.pycgi" style="width: 50%">
+                <form method="post" action="/cgi-bin/calculator.plcgi" style="width: 50%">
                     <div class="form-group">
                         <label for="first">第一个数</label>
                         <input type="text" class="form-control" id="first" name="first">

@@ -1,7 +1,22 @@
+#   Copyright 2023 Gaozih/Gzh0821 https://github.com/Gzh0821
+#
+#     Licensed under the Apache License, Version 2.0 (the "License");
+#     you may not use this file except in compliance with the License.
+#     You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#     Unless required by applicable law or agreed to in writing, software
+#     distributed under the License is distributed on an "AS IS" BASIS,
+#     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#     See the License for the specific language governing permissions and
+#     limitations under the License.
+
 from server.FileTool import FileReader, ExecHandler
 import re
 import datetime
 import user_agents
+from server.LogTool import Logger
 
 
 class HttpHandler:
@@ -16,12 +31,15 @@ class HttpHandler:
     def handle(cls, request_data: str, client_addr: tuple[str, int]) -> bytes:
         time_start = datetime.datetime.now()
         request_lines = request_data.split('\r\n')
-        request_method = None
         default_dynamic_para = {}
         print(f'--------')
+        now_time_str = time_start.strftime("%Y-%b-%d %H:%M:%S")
         if not cls.check(request_lines):
             response_status = 400
+            request_method = 'GET'
             response_body, response_type = FileReader.read_400()
+            Logger.write(client_addr[0], client_addr[1], now_time_str, '', '', 400,
+                         len(response_body), response_type, '')
         else:
             request_method, path, http_version = request_lines[0].split()
             request_headers, request_content = cls.phrase(request_lines[1:])
@@ -36,17 +54,20 @@ class HttpHandler:
                 default_dynamic_para['__client_browser__'] = user_agent.browser.family
                 default_dynamic_para['__client_device__'] = user_agent.device.family
                 default_dynamic_para['__client_user_agent__'] = str(user_agent)
-            default_dynamic_para['__server_time__'] = datetime.datetime.now().strftime("%Y-%b-%d %H:%M:%S")
+            default_dynamic_para['__server_time__'] = now_time_str
             default_dynamic_para['__client_ip__'] = client_addr[0]
             default_dynamic_para['__client_port__'] = str(client_addr[1])
             default_dynamic_para['__request_method__'] = request_method
             # 构造响应数据
             if request_method in ('GET', 'HEAD'):
-                ret_path = ExecHandler.handle(path, '', request_method)
+                ret_para = ExecHandler.handle(path, '', request_method)
             else:
-                ret_path = ExecHandler.handle(path, request_content, request_method)
+                ret_para = ExecHandler.handle(path, request_content, request_method)
             response_status, response_body, response_type = FileReader.read(path,
-                                                                            {**ret_path, **default_dynamic_para})
+                                                                            {**ret_para, **default_dynamic_para})
+            referer = request_headers.get('Referer', '')
+            Logger.write(client_addr[0], client_addr[1], now_time_str, request_method, path,
+                         response_status, len(response_body), response_type, referer)
         # 响应的开始行
         head_data = cls.head_dict[response_status]
         print(f'响应：{head_data}')
@@ -59,6 +80,7 @@ class HttpHandler:
         if request_method == 'HEAD':
             return response_head
         response_data = response_head + response_body
+
         return response_data
 
     @classmethod

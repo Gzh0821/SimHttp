@@ -18,8 +18,8 @@ class QueryCgi(ArgCgi):
             result_text = '错误的id格式！'
         else:
             cursor = cnx.cursor()
-            query = f"SELECT * FROM student WHERE id={input_id}"
-            cursor.execute(query)
+            query = f"SELECT * FROM student WHERE id=%s"
+            cursor.execute(query, (input_id,))
 
             result = cursor.fetchall()
             if result:
