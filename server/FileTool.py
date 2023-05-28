@@ -48,6 +48,8 @@ class FileReader:
     @classmethod
     def read(cls, request_path: str, dynamic_para: dict[str:str] = None) \
             -> tuple[int, str | bytes, str]:
+        if request_path == '/teapot':
+            return 418, 'I\'m a teapot', 'text/plain; charset=utf-8'
         web_dir = Config.get('web_dir')
         file_path = f'./{web_dir}{request_path}'
         status = 200
