@@ -70,9 +70,7 @@
         <p class="m-0 text-center text-white">使用|<a href="https://v4.bootcss.com/">Bootstrap</a>|构建</p>
     </div>
 </footer>
-<script>
-    document.querySelector('input[name="previous-page"]').value = window.location.href;
-</script>
+
 <script src="../../js/jquery.min.js"></script>
 <script src="../../js/popper.min.js"></script>
 <script src="../../js/bootstrap.min.js"></script>
