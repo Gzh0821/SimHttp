@@ -48,6 +48,12 @@ class FileReader:
     @classmethod
     def read(cls, request_path: str, dynamic_para: dict[str:str] = None) \
             -> tuple[int, str | bytes, str]:
+        """
+        读取文件内容
+        :param request_path:
+        :param dynamic_para:
+        :return:
+        """
         if request_path == '/teapot':
             return 418, 'I\'m a teapot', 'text/plain; charset=utf-8'
         web_dir = Config.get('web_dir')
@@ -80,7 +86,6 @@ class FileReader:
                 content = file.read()
             # 处理动态内容
             if file_type in cls.cgi_type and content.startswith('<!--{{dynamic}}-->'):
-                print("--Dynamic!--")
                 dynamic_pattern = r"<!--{%(\w+)%}-->"
                 content = content[len('<!--{{dynamic}}-->'):]
                 if dynamic_para is not None:
@@ -109,27 +114,27 @@ class ExecHandler:
     cgi_type_dict = {'.pycgi': ('.py', 'python'), '.plcgi': ('.pl', 'perl')}
 
     @classmethod
-    def handle(cls, path: str, content: str, method: str) -> dict[str, str]:
+    def handle(cls, path: str, content: str, method: str) -> tuple[dict[str, str], bool]:
         web_dir = Config.get('web_dir')
         file_path = f'./{web_dir}{path}'
         file_type = pathlib.Path(file_path).suffix
         if file_type not in cls.cgi_type_dict:
-            return {}
+            return {}, False
         cgi_file_path = file_path[:file_path.rfind(file_type)] + cls.cgi_type_dict[file_type][0]
         cgi_exec_command = cls.cgi_type_dict[file_type][1]
         try:
             with open(cgi_file_path, 'r', encoding='utf-8') as file:
                 flag_cont = file.readline()
                 if flag_cont.startswith('# {%ONLY POST%}') and method != 'POST':
-                    return {}
+                    return {}, True
         except FileNotFoundError:
-            return {}
+            return {}, True
         try:
             output = subprocess.check_output([cgi_exec_command, cgi_file_path, content], stderr=subprocess.STDOUT)
             print(content)
         except subprocess.CalledProcessError:
-            return {}
+            return {}, True
         out_text = output.decode("utf-8")
         print(out_text)
         out_dict: dict[str, str] = json.loads(out_text)
-        return out_dict
+        return out_dict, True

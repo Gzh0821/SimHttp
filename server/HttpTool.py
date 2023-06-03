@@ -17,6 +17,7 @@ import re
 import datetime
 import user_agents
 from server.LogTool import Logger
+from server.ConfigTool import GlobalConfig as Config
 
 
 class HttpHandler:
@@ -25,7 +26,7 @@ class HttpHandler:
                  418: 'HTTP/1.1 418 I\'m a teapot'}
     default_responds_headers = {'Server': 'Gaozih SimHttp/1.0.0 (Python3)',
                                 'Sim-Test': 'True',
-                                'Cache-Control': 'max-age=600',
+                                'Connection': 'Keep-Alive'
                                 }
 
     @classmethod
@@ -41,6 +42,7 @@ class HttpHandler:
             response_body, response_type = FileReader.read_400()
             Logger.write(client_addr[0], client_addr[1], now_time_str, '', '', 400,
                          len(response_body), response_type, '')
+            if_dynamic = False
         else:
             request_method, path, http_version = request_lines[0].split()
             request_headers, request_content = cls.phrase(request_lines[1:])
@@ -61,9 +63,9 @@ class HttpHandler:
             default_dynamic_para['__request_method__'] = request_method
             # 构造响应数据
             if request_method in ('GET', 'HEAD'):
-                ret_para = ExecHandler.handle(path, '', request_method)
+                ret_para, if_dynamic = ExecHandler.handle(path, '', request_method)
             else:
-                ret_para = ExecHandler.handle(path, request_content, request_method)
+                ret_para, if_dynamic = ExecHandler.handle(path, request_content, request_method)
             response_status, response_body, response_type = FileReader.read(path,
                                                                             {**ret_para, **default_dynamic_para})
             referer = request_headers.get('Referer', '')
@@ -76,7 +78,7 @@ class HttpHandler:
             response_body = response_body.encode("utf-8")
         # 组合响应报文
         response_head = f'{head_data}\r\n' \
-                        f'{cls.gen_header(len(response_body), response_type, time_start)}' \
+                        f'{cls.gen_header(len(response_body), response_type, time_start, not if_dynamic)}' \
                         f'\r\n\r\n'.encode("utf-8")
         if request_method == 'HEAD':
             return response_head
@@ -117,7 +119,7 @@ class HttpHandler:
         return headers, content
 
     @classmethod
-    def gen_header(cls, content_len: int, content_type: str, time_start: datetime) -> str:
+    def gen_header(cls, content_len: int, content_type: str, time_start: datetime, if_cache: bool) -> str:
         headers = cls.default_responds_headers.copy()
 
         time_end = datetime.datetime.now()
@@ -131,6 +133,8 @@ class HttpHandler:
         headers['Date'] = date_str
         headers['Content-Type'] = content_type
         headers['Handle-time'] = f'{time_end.microsecond - time_start.microsecond} microsecond'
-
+        headers['Keep-Alive'] = f'timeout={Config.get("default_timeout")}, max=100'
+        if if_cache:
+            headers['Cache-Control'] = 'max-age=600'
         header_str = '\r\n'.join([f'{key}: {value}' for key, value in headers.items()])
         return header_str
