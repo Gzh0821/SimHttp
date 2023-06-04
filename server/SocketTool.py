@@ -14,6 +14,7 @@
 
 import socket
 import socketserver
+import ssl
 import threading
 
 from server.HttpTool import HttpHandler
@@ -29,9 +30,15 @@ class SimTCPHandler(socketserver.BaseRequestHandler):
         cls.ssl_context = ssl_context
 
     def handle(self):
-        if Config.if_ssl():
-            self.request = self.ssl_context.wrap(self.request)
         try:
+            if Config.if_ssl():
+                try:
+                    self.request = self.ssl_context.wrap(self.request)
+                except ssl.SSLError:
+                    print(f"Wrong request from {self.client_address}")
+                    self.request.close()
+                    return
+
             # 接收客户端请求数据
             while True:
                 client_addr = self.client_address
