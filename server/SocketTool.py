@@ -40,11 +40,11 @@ class SimTCPHandler(socketserver.BaseRequestHandler):
                     return
 
             # 接收客户端请求数据
-            client_addr = self.client_address
-            request_data = self.request.recv(Config.getint('recv_len')).decode()
-            res_data = HttpHandler.handle(request_data, client_addr)
-            self.request.sendall(res_data)
-            self.request.close()
+            while True:
+                client_addr = self.client_address
+                request_data = self.request.recv(Config.getint('recv_len')).decode()
+                res_data = HttpHandler.handle(request_data, client_addr)
+                self.request.sendall(res_data)
         except TimeoutError:
             # print(f"Close socket {self.client_address}")
             self.request.close()
