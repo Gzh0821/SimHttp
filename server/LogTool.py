@@ -24,7 +24,7 @@ class Logger:
     def write(cls, ip_addr: str, ip_port: int, time_str: str, request_type: str, request_file: str,
               status: int, filesize: int, filetype: str, referer: str):
 
-        log_str = f'[INFO][Time#{time_str}][Addr#{ip_addr}:{ip_port}][Type#{request_type}]' \
+        log_str = f'[Time#{time_str}][Addr#{ip_addr}:{ip_port}][Type#{request_type}]' \
                   f'[RequestFile#{request_file}]' \
                   f'[Status#{status}][FileSize#{filesize}][FileType#{filetype}][Referer#{referer}]'
 

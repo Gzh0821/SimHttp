@@ -65,7 +65,7 @@ class FileReader:
                 file_path += '/'
             file_path += Config.get('home_page')
             file_type = pathlib.Path(file_path).suffix
-        print(f'请求文件：{file_path}')
+        # print(f'请求文件：{file_path}')
         # 检查是否禁止访问
         if file_type not in cls.access_file_type:
             status = 403
@@ -76,7 +76,7 @@ class FileReader:
             if not file_exist:
                 file_path = f'./{web_dir}/404.html'
                 status = 404
-        print(f'读取文件：{file_path}')
+        # print(f'读取文件：{file_path}')
         file_type = pathlib.Path(file_path).suffix
         # 读取文件全部内容
         if file_type in cls.byte_type:
@@ -131,10 +131,10 @@ class ExecHandler:
             return {}, True
         try:
             output = subprocess.check_output([cgi_exec_command, cgi_file_path, content], stderr=subprocess.STDOUT)
-            print(content)
+            # print(content)
         except subprocess.CalledProcessError:
             return {}, True
         out_text = output.decode("utf-8")
-        print(out_text)
+        # print(out_text)
         out_dict: dict[str, str] = json.loads(out_text)
         return out_dict, True

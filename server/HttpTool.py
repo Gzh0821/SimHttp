@@ -12,12 +12,14 @@
 #     See the License for the specific language governing permissions and
 #     limitations under the License.
 
-from server.FileTool import FileReader, ExecHandler
-import re
 import datetime
+import re
+
 import user_agents
-from server.LogTool import Logger
+
 from server.ConfigTool import GlobalConfig as Config
+from server.FileTool import FileReader, ExecHandler
+from server.LogTool import Logger
 
 
 class HttpHandler:
@@ -34,7 +36,7 @@ class HttpHandler:
         time_start = datetime.datetime.now()
         request_lines = request_data.split('\r\n')
         default_dynamic_para = {}
-        print(f'--------')
+        # print(f'--------')
         now_time_str = time_start.strftime("%Y-%b-%d %H:%M:%S")
         if not cls.check(request_lines):
             response_status = 400
@@ -47,9 +49,9 @@ class HttpHandler:
             request_method, path, http_version = request_lines[0].split()
             request_headers, request_content = cls.phrase(request_lines[1:])
 
-            print(f'请求方法：{request_method}, 请求路径：{path}, HTTP版本：{http_version}')
+            # print(f'请求方法：{request_method}, 请求路径：{path}, HTTP版本：{http_version}')
             if 'User-Agent' in request_headers:
-                print(f"用户头：{request_headers['User-Agent']}")
+                # print(f"用户头：{request_headers['User-Agent']}")
                 # 向所有动态页面发送的信息：
                 default_dynamic_para['__client_origin_user_agent__'] = request_headers['User-Agent']
                 user_agent = user_agents.parse(request_headers['User-Agent'])
@@ -73,7 +75,7 @@ class HttpHandler:
                          response_status, len(response_body), response_type, referer)
         # 响应的开始行
         head_data = cls.head_dict[response_status]
-        print(f'响应：{head_data}')
+        # print(f'响应：{head_data}')
         if not isinstance(response_body, bytes):
             response_body = response_body.encode("utf-8")
         # 组合响应报文
@@ -90,13 +92,13 @@ class HttpHandler:
     def check(cls, request_lines: list[str]) -> bool:
         # 检查开始行是否正确
         request_pattern = r'^[A-Z]+\s\S+\sHTTP\/(1\.0|1\.1|2\.0)$'
-        print(request_lines[0])
+        # print(request_lines[0])
         if re.match(request_pattern, request_lines[0]):
             try:
                 request_method, path, http_version = request_lines[0].split()
             except ValueError as e:
-                print(e)
-                print(f'-->{request_lines[0]}<--')
+                # print(f'-->{request_lines[0]}<--')
+                pass
             else:
                 if request_method in ('GET', 'POST', 'HEAD'):
                     return True

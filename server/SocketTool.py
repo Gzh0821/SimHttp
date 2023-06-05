@@ -17,9 +17,9 @@ import socketserver
 import ssl
 import threading
 
+from server.ConfigTool import GlobalConfig as Config
 from server.HttpTool import HttpHandler
 from server.SslTool import SimSSLWrapper
-from server.ConfigTool import GlobalConfig as Config
 
 
 class SimTCPHandler(socketserver.BaseRequestHandler):
@@ -35,20 +35,22 @@ class SimTCPHandler(socketserver.BaseRequestHandler):
                 try:
                     self.request = self.ssl_context.wrap(self.request)
                 except ssl.SSLError:
-                    print(f"Wrong request from {self.client_address}")
+                    # print(f"Wrong request from {self.client_address}")
                     self.request.close()
                     return
 
             # 接收客户端请求数据
-            while True:
-                client_addr = self.client_address
-                request_data = self.request.recv(Config.getint('recv_len')).decode()
-                res_data = HttpHandler.handle(request_data, client_addr)
-                self.request.sendall(res_data)
-        except TimeoutError:
-            print(f"Close socket {self.client_address}")
+            client_addr = self.client_address
+            request_data = self.request.recv(Config.getint('recv_len')).decode()
+            res_data = HttpHandler.handle(request_data, client_addr)
+            self.request.sendall(res_data)
             self.request.close()
-
+        except TimeoutError:
+            # print(f"Close socket {self.client_address}")
+            self.request.close()
+        except ssl.SSLZeroReturnError:
+            # print(f"Close socket {self.client_address}")
+            self.request.close()
 
 class SimTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     allow_reuse_address = True
@@ -60,10 +62,10 @@ class SimTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
 
     def process_request_thread(self, request, client_address):
         # 检查当前活跃的线程数量
-        current_thread_count = threading.active_count() - 1  # 减去主线程
+        current_thread_count = threading.active_count() - 2  # 减去主线程
         if current_thread_count >= self.max_thread_count:
             # 拒绝新的连接
-            print(f'Rejected connection from {client_address}. Maximum thread count reached.')
+            # print(f'Rejected connection from {client_address}. Maximum thread count reached.')
             return
 
         # 处理请求
