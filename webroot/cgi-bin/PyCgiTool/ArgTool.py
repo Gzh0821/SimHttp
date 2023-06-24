@@ -5,9 +5,10 @@ from urllib.parse import parse_qs
 
 class ArgCgi:
     def __init__(self, arguments: list[str] | str):
+        self.content = None
         if isinstance(arguments, str):
             self.content = arguments
-        else:
+        elif len(arguments) > 1:
             self.content = arguments[1]
         self.post_data = parse_qs(self.content)
         self.out_dict: dict = {}
